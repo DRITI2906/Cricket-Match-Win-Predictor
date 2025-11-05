@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 import logging
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(_name_)
 
 
 try:
@@ -19,33 +19,34 @@ except ImportError:
 
 class CricketPredictor:
     
-    def __init__(self, model_path: str = None):
+    
+    def _init_(self, model_path: str = None):
         self.model = None
         self.model_info = None
         self.explainer = None
         
         if model_path is None:
             # Default path
-            base_dir = Path(__file__).parent.parent.parent
+            base_dir = Path(_file_).parent.parent.parent
             model_path = base_dir / "models" / "cricket_model.pkl"
         
         self.model_path = model_path
         self.load_model()
     
     def load_model(self):
-        """Load the trained model"""
+        
         try:
             if os.path.exists(self.model_path):
                 self.model = joblib.load(self.model_path)
                 logger.debug(f"Model loaded from: {self.model_path}")
                 
-                
+               
                 info_path = str(self.model_path).replace("cricket_model.pkl", "model_info.pkl")
                 if os.path.exists(info_path):
                     self.model_info = joblib.load(info_path)
                     logger.debug(f"Model info loaded from: {info_path}")
                 
-                
+               
                 self._initialize_explainer()
             else:
                 logger.warning(f"Model file not found: {self.model_path}")
@@ -55,16 +56,16 @@ class CricketPredictor:
             logger.debug("Using mock predictions")
     
     def _initialize_explainer(self):
-        """Initialize SHAP explainer for the model"""
+       
         if not SHAP_AVAILABLE:
             logger.debug("SHAP not available. Will use feature importance instead.")
             self.explainer = None
             return
             
         try:
-            
-            classifier = self.model.named_steps['classifier']
            
+            classifier = self.model.named_steps['classifier']
+            
             self.explainer = shap.TreeExplainer(classifier)
             logger.debug("SHAP explainer initialized")
         except Exception as e:
@@ -77,21 +78,22 @@ class CricketPredictor:
             return self._mock_prediction(input_data)
         
         try:
-          
+            
             df = self._prepare_input(input_data)
             
             
             probabilities = self.model.predict_proba(df)[0]
-            prediction = self.model.predict(df)[0]
+            prediction = self.model.predict(df)
             
-           
+            
             logger.debug(f"probabilities array: {probabilities}")
             logger.debug(f"prediction: {prediction}")
             
            
-            
             batting_team_win_probability = probabilities[1]  # Class 1 = batting team wins
-            predicted_class_idx = int(prediction[0])
+            
+            
+            predicted_class_idx = int(prediction[0]) if hasattr(prediction, '_len_') else int(prediction)
             
             logger.debug(f"predicted_class_idx: {predicted_class_idx}")
             logger.debug(f"batting_team_win_prob: {batting_team_win_probability}")
@@ -104,10 +106,10 @@ class CricketPredictor:
             
             logger.debug(f"winner: {winner}")
             
-           
+            
             shap_values = self._get_shap_explanation(df)
             
-            # Return batting team's win probability (always 0-1 scale)
+            
             return winner, float(batting_team_win_probability), shap_values
             
         except Exception as e:
@@ -116,7 +118,6 @@ class CricketPredictor:
     
     def _prepare_input(self, input_data: Dict) -> pd.DataFrame:
         
-        # Map the API input to model features
         data = {
             'batting_team': input_data.get('batting_team', input_data.get('team1')),
             'bowling_team': input_data.get('bowling_team', input_data.get('team2')),
@@ -134,19 +135,19 @@ class CricketPredictor:
         return pd.DataFrame([data])
     
     def _get_shap_explanation(self, df: pd.DataFrame) -> List[Dict]:
-        """Generate SHAP explanations for the prediction"""
+       
         if self.explainer is None:
             return self._get_feature_importance_explanation(df)
         
         try:
-            
+           
             preprocessor = self.model.named_steps['preprocessor']
             X_transformed = preprocessor.transform(df)
             
             
             shap_values_raw = self.explainer.shap_values(X_transformed)
             
-           
+            
             if isinstance(shap_values_raw, list):
                 shap_values_raw = shap_values_raw[1]
             
@@ -156,7 +157,7 @@ class CricketPredictor:
            
             shap_list = []
             for idx, value in enumerate(shap_values_raw[0]):
-                if abs(value) > 0.01:  
+                if abs(value) > 0.01: 
                     shap_list.append({
                         'feature': feature_names[idx] if idx < len(feature_names) else f"feature_{idx}",
                         'value': float(value),
@@ -173,30 +174,68 @@ class CricketPredictor:
             return self._get_feature_importance_explanation(df)
     
     def _get_feature_importance_explanation(self, df: pd.DataFrame) -> List[Dict]:
-        """
-        Alternative explanation using feature importance from RandomForest
-        Used when SHAP is not available
-        """
+       
         try:
             classifier = self.model.named_steps['classifier']
             feature_names = self._get_feature_names()
             
-            
+           
             importances = classifier.feature_importances_
             
-           
+            
+            input_data = df.iloc[0]
+            
+            
             importance_list = []
-            for idx, importance in enumerate(importances):
-                if importance > 0.01:  
-                    feature_name = feature_names[idx] if idx < len(feature_names) else f"feature_{idx}"
+            
+           
+            numerical_features = {
+                'runs_required': input_data.get('runs_required', 0),
+                'wickets_in_hand': input_data.get('wickets_in_hand', 0),
+                'balls_remaining': input_data.get('balls_remaining', 0),
+                'required_run_rate': input_data.get('required_run_rate', 0),
+                'current_run_rate': input_data.get('current_run_rate', 0),
+            }
+            
+            
+            for feature, value in numerical_features.items():
+                if feature in feature_names:
+                    idx = feature_names.index(feature)
+                    base_importance = importances[idx] if idx < len(importances) else 0.1
+                    
+                    
+                    impact_direction = 'positive'
+                    impact_value = base_importance
+                    
+                    if feature == 'runs_required':
+                        
+                        impact_direction = 'negative' if value > 100 else 'positive'
+                        impact_value = base_importance * (value / 200)  # Scale by value
+                    elif feature == 'wickets_in_hand':
+                       
+                        impact_direction = 'positive'
+                        impact_value = base_importance * (value / 10)
+                    elif feature == 'required_run_rate':
+                        
+                        impact_direction = 'negative' if value > 8 else 'positive'
+                        impact_value = base_importance * min(value / 10, 1.0)
+                    elif feature == 'current_run_rate':
+                       
+                        impact_direction = 'positive'
+                        impact_value = base_importance * min(value / 10, 1.0)
+                    elif feature == 'balls_remaining':
+                        
+                        impact_direction = 'positive'
+                        impact_value = base_importance * (value / 120)
+                    
                     importance_list.append({
-                        'feature': self._clean_feature_name(feature_name),
-                        'value': float(importance),
-                        'impact': 'positive' 
+                        'feature': self._clean_feature_name(feature),
+                        'value': float(impact_value),
+                        'impact': impact_direction
                     })
             
             
-            importance_list = sorted(importance_list, key=lambda x: x['value'], reverse=True)[:10]
+            importance_list = sorted(importance_list, key=lambda x: abs(x['value']), reverse=True)[:5]
             
             return importance_list
             
@@ -205,25 +244,26 @@ class CricketPredictor:
             return self._default_shap_values()
     
     def _clean_feature_name(self, name: str) -> str:
+        
        
-        # Remove prefixes from one-hot encoded features
         if '_' in name:
             parts = name.split('_', 1)
             if parts[0] in ['batting_team', 'bowling_team', 'venue', 'toss_winner', 'toss_decision']:
                 return f"{parts[0].replace('_', ' ').title()}: {parts[1]}"
         
-        
+       
         name = name.replace('_', ' ').title()
         return name
     
     def _get_feature_names(self) -> List[str]:
+        
         try:
             preprocessor = self.model.named_steps['preprocessor']
             
            
             num_features = self.model_info['numerical_features']
             
-           
+            
             cat_transformer = preprocessor.named_transformers_['cat']
             onehot = cat_transformer.named_steps['onehot']
             cat_features = onehot.get_feature_names_out(self.model_info['categorical_features'])
