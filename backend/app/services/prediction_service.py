@@ -1,22 +1,29 @@
+import logging
 from app.models.match import MatchInput, PredictionResponse, ShapValue
 from app.ml.predictor import CricketPredictor
 from typing import List
 
+logger = logging.getLogger(__name__)
+
 class PredictionService:
-   
+    
     
     def _init_(self):
-        
-        self.predictor = None  
+       
+        self.predictor = None
         try:
+            logger.info("Initializing CricketPredictor...")
             self.predictor = CricketPredictor()
-            print("ML Predictor initialized successfully")
-        except Exception as e:
-            print(f"Error initializing predictor: {e}")
+            logger.info("PredictionService initialized with ML predictor")
+        except Exception:
             
+            logger.exception("Failed to initialize CricketPredictor during PredictionService startup")
     
     async def predict(self, match_data: MatchInput) -> PredictionResponse:
-        
+        """
+        Predict match outcome based on input data using ML model
+        """
+       
         model_input = {
             'team1': match_data.team1,
             'team2': match_data.team2,
@@ -35,33 +42,34 @@ class PredictionService:
         }
         
        
-        if self.predictor:
-            winner, probability, shap_values = self.predictor.predict(model_input)
+        if getattr(self, "predictor", None):
+            winner, batting_win_prob, shap_values = self.predictor.predict(model_input)
         else:
-            
-            import random
-            probability = random.uniform(0.55, 0.85)
-            winner = match_data.team1
+           
+            logger.warning("Predictor not available, returning fallback prediction")
+            batting_team = model_input.get('batting_team') or match_data.team1
+            winner = batting_team
+            batting_win_prob = 0.5
             shap_values = self._default_shap_values()
+
         
-       
-        confidence = "high" if probability > 0.7 else "medium" if probability > 0.6 else "low"
+        confidence = "high" if batting_win_prob > 0.7 else "medium" if batting_win_prob > 0.6 else "low"
         
        
         shap_explanation = []
         try:
             for sv in shap_values:
-                
+               
                 feature = str(sv.get('feature', 'Unknown'))
                 value = float(sv.get('value', 0.0))
                 impact = str(sv.get('impact', 'neutral'))
                 shap_explanation.append(ShapValue(feature=feature, value=value, impact=impact))
-        except Exception as e:
+        except Exception:
            
-            print(f"Error converting SHAP values: {e}")
+            logger.exception("Error converting SHAP values, using default explanation")
             shap_explanation = [ShapValue(**sv) for sv in self._default_shap_values()]
         
-       
+        
         factors = {
             "toss": f"Won by {match_data.toss_winner}" if match_data.toss_winner else "N/A",
             "toss_decision": match_data.toss_decision if match_data.toss_decision else "N/A",
@@ -71,14 +79,16 @@ class PredictionService:
         
         return PredictionResponse(
             winner=winner,
-            probability=round(probability, 2),
+            probability=round(batting_win_prob, 2),
             confidence=confidence,
             shap_explanation=shap_explanation,
             factors=factors
         )
     
     def _default_shap_values(self) -> List[dict]:
-       
+        """
+        Default SHAP values when model is not available
+        """
         return [
             {'feature': 'Team Strength', 'value': 0.15, 'impact': 'positive'},
             {'feature': 'Home Advantage', 'value': 0.12, 'impact': 'positive'},
