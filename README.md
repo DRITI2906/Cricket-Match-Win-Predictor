@@ -3,6 +3,8 @@
 An AI-powered Cricket Match Win Probability Predictor that estimates the likelihood of a batting team winning a match based on live game data — built with Machine Learning (Random Forest), FastAPI, and React.
 The project also integrates Explainable AI (SHAP Analysis) to make model decisions transparent and interpretable.
 
+- **Deployed Link** - https://cricket-match-win-predictor.vercel.app/
+
 ## 🚀 Project Overview
 
 This web application predicts the winning probability of a team during a live cricket match scenario.
