@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 import logging
 
 
-logger = logging.getLogger(_name_)
+logger = logging.getLogger(__name__)
 
 
 try:
