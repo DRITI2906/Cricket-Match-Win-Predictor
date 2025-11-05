@@ -6,9 +6,10 @@ from typing import List
 logger = logging.getLogger(__name__)
 
 class PredictionService:
-   
+    
+    
     def _init_(self):
-        
+       
         self.predictor = None
         try:
             logger.info("Initializing CricketPredictor...")
@@ -17,6 +18,18 @@ class PredictionService:
         except Exception:
            
             logger.exception("Failed to initialize CricketPredictor during PredictionService startup")
+       
+        try:
+            self.model_loaded = bool(getattr(self.predictor, 'model', None))
+            logger.info(f"Model loaded: {self.model_loaded}")
+            if self.model_loaded:
+                
+                model_info = getattr(self.predictor, 'model_info', None)
+                if model_info:
+                    logger.info(f"Model info keys: {list(model_info.keys())}")
+        except Exception:
+            self.model_loaded = False
+            logger.exception("Error determining model_loaded flag")
     
     async def predict(self, match_data: MatchInput) -> PredictionResponse:
        
@@ -37,11 +50,11 @@ class PredictionService:
             'required_run_rate': getattr(match_data, 'required_run_rate', 7.5)
         }
         
-       
+        
         if getattr(self, "predictor", None):
             winner, batting_win_prob, shap_values = self.predictor.predict(model_input)
         else:
-            # Fallback prediction if predictor unavailable
+           
             logger.warning("Predictor not available, returning fallback prediction")
             batting_team = model_input.get('batting_team') or match_data.team1
             winner = batting_team
@@ -51,11 +64,11 @@ class PredictionService:
         
         confidence = "high" if batting_win_prob > 0.7 else "medium" if batting_win_prob > 0.6 else "low"
         
-        
+       
         shap_explanation = []
         try:
             for sv in shap_values:
-                
+            
                 feature = str(sv.get('feature', 'Unknown'))
                 value = float(sv.get('value', 0.0))
                 impact = str(sv.get('impact', 'neutral'))
@@ -65,7 +78,7 @@ class PredictionService:
             logger.exception("Error converting SHAP values, using default explanation")
             shap_explanation = [ShapValue(**sv) for sv in self._default_shap_values()]
         
-        
+       
         factors = {
             "toss": f"Won by {match_data.toss_winner}" if match_data.toss_winner else "N/A",
             "toss_decision": match_data.toss_decision if match_data.toss_decision else "N/A",
@@ -82,7 +95,7 @@ class PredictionService:
         )
     
     def _generate_dynamic_shap_values(self, model_input: dict) -> List[dict]:
-        
+       
         import random
         
        
@@ -92,10 +105,10 @@ class PredictionService:
         required_run_rate = model_input.get('required_run_rate', 7.5)
         current_run_rate = model_input.get('current_run_rate', 6.0)
         
-        
+       
         shap_values = []
         
-       
+        
         runs_impact = -0.05 - (runs_required / 200) * 0.2 + random.uniform(-0.03, 0.03)
         shap_values.append({
             'feature': 'Runs Required',
@@ -119,7 +132,7 @@ class PredictionService:
             'impact': 'negative' if rrr_impact < 0 else 'positive'
         })
         
-       
+        
         crr_impact = (current_run_rate / 10) * 0.2 + random.uniform(-0.02, 0.02)
         shap_values.append({
             'feature': 'Current Run Rate',
@@ -138,7 +151,7 @@ class PredictionService:
         
         shap_values = sorted(shap_values, key=lambda x: abs(x['value']), reverse=True)
         
-        return shap_values[:5]  
+        return shap_values[:5]  # Return top 5
     
     def _default_shap_values(self) -> List[dict]:
         """
