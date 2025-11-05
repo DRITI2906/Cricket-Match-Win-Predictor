@@ -1,0 +1,8 @@
+backend/
+node_modules/
+.git/
+*.pyc
+__pycache__/
+*.pkl
+.env.local
+.DS_Store

@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 100 60% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 100 60% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 100 60% 10%;
+
+    --primary: 100 45% 25%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 45 95% 55%;
+    --secondary-foreground: 100 60% 10%;
+
+    --muted: 100 20% 90%;
+    --muted-foreground: 100 20% 40%;
+
+    --accent: 10 80% 55%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 100 25% 85%;
+    --input: 100 25% 85%;
+    --ring: 100 45% 25%;
+
+    --radius: 0.75rem;
+    
+    /* Cricket-themed custom tokens */
+    --cricket-green: 100 45% 25%;
+    --cricket-green-light: 100 40% 35%;
+    --cricket-red: 10 80% 55%;
+    --cricket-gold: 45 95% 55%;
+    --gradient-field: linear-gradient(135deg, hsl(100 45% 25%), hsl(100 50% 35%), hsl(195 70% 45%));
+    --gradient-accent: linear-gradient(90deg, hsl(10 80% 55%), hsl(45 95% 55%));
+    --shadow-glow: 0 10px 40px -5px hsl(100 45% 25% / 0.3);
+    --shadow-card: 0 4px 20px -2px hsl(0 0% 0% / 0.1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 100 60% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 100 50% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 100 50% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 100 50% 45%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 45 90% 50%;
+    --secondary-foreground: 100 60% 10%;
+
+    --muted: 100 30% 20%;
+    --muted-foreground: 100 15% 65%;
+
+    --accent: 10 75% 50%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 100 30% 20%;
+    --input: 100 30% 20%;
+    --ring: 100 50% 45%;
+    
+    --cricket-green: 100 50% 45%;
+    --cricket-green-light: 100 45% 55%;
+    --cricket-red: 10 75% 50%;
+    --cricket-gold: 45 90% 50%;
+    --gradient-field: linear-gradient(135deg, hsl(100 50% 15%), hsl(100 45% 25%), hsl(195 60% 35%));
+    --gradient-accent: linear-gradient(90deg, hsl(10 75% 50%), hsl(45 90% 50%));
+    --shadow-glow: 0 10px 40px -5px hsl(100 50% 45% / 0.4);
+    --shadow-card: 0 4px 20px -2px hsl(0 0% 0% / 0.3);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
