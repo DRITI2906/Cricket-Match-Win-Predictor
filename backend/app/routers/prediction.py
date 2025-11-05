@@ -10,9 +10,7 @@ prediction_service = None
 
 @router.post("/predict", response_model=PredictionResponse)
 async def predict_match(match_data: MatchInput):
-    """
-    Predict the outcome of a cricket match
-    """
+   
     try:
         global prediction_service
         if prediction_service is None:
