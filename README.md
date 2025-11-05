@@ -22,12 +22,12 @@ Based on these inputs, the trained Random Forest model calculates the real-time 
 
 ## 🧩 Features
 
-✅ Real-time win prediction
-✅ Interactive dashboard with clean UI
-✅ Explainable AI via SHAP
-✅ FastAPI backend for high-speed inference
-✅ Modular ML pipeline (train → serve → visualize)
-✅ Deployed-ready full-stack structure
+- Real-time win prediction
+- Interactive dashboard with clean UI
+- Explainable AI via SHAP
+- FastAPI backend for high-speed inference
+- Modular ML pipeline (train → serve → visualize)
+- Deployed-ready full-stack structure
 
 ## 🖥️ Tech Stack
 
