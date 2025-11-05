@@ -22,14 +22,14 @@ class CricketPredictor:
     Load trained model and make predictions with SHAP explanations
     """
     
-    def _init_(self, model_path: str = None):
+    def __init__(self, model_path: str = None):
         self.model = None
         self.model_info = None
         self.explainer = None
         
         if model_path is None:
             # Default path
-            base_dir = Path(_file_).parent.parent.parent
+            base_dir = Path(__file__).parent.parent.parent
             model_path = base_dir / "models" / "cricket_model.pkl"
         
         self.model_path = model_path
@@ -108,7 +108,7 @@ class CricketPredictor:
             batting_team_win_probability = probabilities[1]  # Class 1 = batting team wins
             
             # Handle both scalar and array predictions
-            predicted_class_idx = int(prediction[0]) if hasattr(prediction, '_len_') else int(prediction)
+            predicted_class_idx = int(prediction[0]) if hasattr(prediction, '__len__') else int(prediction)
             
             logger.debug(f"predicted_class_idx: {predicted_class_idx}")
             logger.debug(f"batting_team_win_prob: {batting_team_win_probability}")
@@ -286,7 +286,7 @@ class CricketPredictor:
             onehot = cat_transformer.named_steps['onehot']
             cat_features = onehot.get_feature_names_out(self.model_info['categorical_features'])
             
-           
+            # Combine all feature names
             all_features = list(num_features) + list(cat_features)
             return all_features
             

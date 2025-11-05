@@ -10,7 +10,7 @@ class PredictionService:
     Service for cricket match prediction with ML model
     """
     
-    def _init_(self):
+    def __init__(self):
         # Load the trained ML model
         # Ensure predictor attribute always exists even if initialization fails.
         self.predictor = None
