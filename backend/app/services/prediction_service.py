@@ -8,7 +8,7 @@ class PredictionService:
     """
     
     def __init__(self):
-        # Load the trained ML model
+        
         try:
             self.predictor = CricketPredictor()
             print("ML Predictor initialized successfully")
@@ -20,7 +20,7 @@ class PredictionService:
         """
         Predict match outcome based on input data using ML model
         """
-        # Prepare input data for the model
+       
         model_input = {
             'team1': match_data.team1,
             'team2': match_data.team2,
@@ -38,7 +38,7 @@ class PredictionService:
             'required_run_rate': getattr(match_data, 'required_run_rate', 7.5)
         }
         
-        # Get prediction from ML model
+       
         if self.predictor:
             winner, probability, shap_values = self.predictor.predict(model_input)
         else:
@@ -48,7 +48,7 @@ class PredictionService:
             winner = match_data.team1
             shap_values = self._default_shap_values()
         
-        # Determine confidence level
+    
         confidence = "high" if probability > 0.7 else "medium" if probability > 0.6 else "low"
         
         # Convert SHAP values to response format
@@ -60,7 +60,6 @@ class PredictionService:
             ) for sv in shap_values
         ]
         
-        # Prepare factors
         factors = {
             "toss": f"Won by {match_data.toss_winner}" if match_data.toss_winner else "N/A",
             "toss_decision": match_data.toss_decision if match_data.toss_decision else "N/A",

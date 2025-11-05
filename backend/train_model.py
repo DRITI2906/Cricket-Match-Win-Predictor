@@ -6,7 +6,7 @@ import sys
 import os
 from pathlib import Path
 
-# Add parent directory to path
+
 sys.path.insert(0, str(Path(__file__).parent))
 
 from app.ml.model_trainer import CricketModelTrainer
@@ -16,10 +16,10 @@ def main():
     print("Cricket Match Prediction Model Training")
     print("=" * 60)
     
-    # Initialize trainer
+   
     trainer = CricketModelTrainer()
     
-    # Path to cricket data
+   
     data_path = Path(__file__).parent.parent / "cricket_features.csv"
     
     if not data_path.exists():
@@ -31,10 +31,9 @@ def main():
     print(f"\n✓ Found data file: {data_path}")
     
     try:
-        # Train the model
+       
         model, accuracy = trainer.train(str(data_path))
         
-        # Save the model
         models_dir = Path(__file__).parent / "models"
         model_path = trainer.save_model(str(models_dir))
         
