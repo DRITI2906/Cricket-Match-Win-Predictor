@@ -5,12 +5,14 @@ from app.services.prediction_service import PredictionService
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
+# Lazy-initialize the service to avoid import-time failures during deployment
 prediction_service = None
 
 @router.post("/predict", response_model=PredictionResponse)
 async def predict_match(match_data: MatchInput):
-   
+    """
+    Predict the outcome of a cricket match
+    """
     try:
         global prediction_service
         if prediction_service is None:
@@ -23,9 +25,9 @@ async def predict_match(match_data: MatchInput):
         result = await prediction_service.predict(match_data)
         return result
     except Exception as e:
-        
+        # Log the full exception with stack trace so deployments show useful logs
         logger.exception("Unhandled error in /api/predict")
-       
+        # Return a generic HTTP 500 with minimal detail
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
