@@ -7,14 +7,8 @@ app = FastAPI(title="Win Wise Cricket Insight API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # Default Vite dev server
-        "http://localhost:8080",  # Alternative Vite port
-        "http://localhost:3000",  # Common React port
-        "https://*.vercel.app",  # All Vercel deployments
-        "https://vercel.app",    # Vercel domains
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins (you can restrict this later)
+    allow_credentials=False,  # Must be False when using allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
 )
